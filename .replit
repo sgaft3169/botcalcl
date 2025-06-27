@@ -3,7 +3,7 @@ entrypoint = "README.md"
 
 [nix]
 channel = "stable-24_05"
-packages = ["cowsay"]
+packages = ["cowsay", "python3"]
 
 [workflows]
 runButton = "Run Telegram Bot"
