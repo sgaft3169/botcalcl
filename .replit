@@ -4,3 +4,15 @@ entrypoint = "README.md"
 [nix]
 channel = "stable-24_05"
 packages = ["cowsay"]
+
+[workflows]
+runButton = "Run Telegram Bot"
+
+[[workflows.workflow]]
+name = "Run Telegram Bot"
+author = 44316140
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd replit_postgres_bot && python main.py"

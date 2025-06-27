@@ -56,7 +56,7 @@ async def cur_tariff(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         context.user_data['cur'] = float(update.message.text)
     except ValueError:
         await update.message.reply_text("Пожалуйста, введите число.")
-        return CURэээээээ
+        return CUR
     await update.message.reply_text("Введите а/плату для нового тарифа (₽/мес):")
     return NEW
 
