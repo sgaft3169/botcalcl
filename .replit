@@ -1,9 +1,10 @@
 run = "cowsay Configure me!"
 entrypoint = "README.md"
+modules = ["python-3.11"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["cowsay", "python3"]
+packages = ["cairo", "cowsay", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "pkg-config", "python3", "qhull", "tcl", "tk"]
 
 [workflows]
 runButton = "Run Telegram Bot"
