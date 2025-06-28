@@ -251,6 +251,14 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(help_text)
 
 if __name__ == '__main__':
+    # Запуск Flask сервера в отдельном потоке
+    from flask_server import run_flask
+    import threading
+    
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    
+    # Запуск Telegram бота
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     conv = ConversationHandler(
