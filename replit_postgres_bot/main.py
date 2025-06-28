@@ -38,14 +38,44 @@ async def check_subscription(update: Update) -> bool:
     except:
         return False
 
+async def send_subscription_prompt(update: Update) -> None:
+    keyboard = [
+        [InlineKeyboardButton("📺 Подписаться на канал", url=f"https://t.me/{CHANNEL_ID.lstrip('@')}")],
+        [InlineKeyboardButton("✅ Я подписался, проверить", callback_data="check_subscription")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(
+        "🔒 Для использования бота необходимо подписаться на наш канал!\n\n"
+        "После подписки нажмите кнопку 'Я подписался':",
+        reply_markup=reply_markup
+    )
+
+async def subscription_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+    
+    if query.data == "check_subscription":
+        if await check_subscription(update):
+            await query.edit_message_text("✅ Отлично! Теперь вы можете пользоваться ботом.\n\nВведите текущий тариф (₽/мес):")
+            return CUR
+        else:
+            keyboard = [
+                [InlineKeyboardButton("📺 Подписаться на канал", url=f"https://t.me/{CHANNEL_ID.lstrip('@')}")],
+                [InlineKeyboardButton("✅ Я подписался, проверить", callback_data="check_subscription")]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(
+                "❌ Вы ещё не подписаны на канал.\n\n"
+                "Пожалуйста, подпишитесь и нажмите кнопку повторно:",
+                reply_markup=reply_markup
+            )
+            return ConversationHandler.END
+    
+    return ConversationHandler.END
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not await check_subscription(update):
-        keyboard = [[InlineKeyboardButton("Подписаться", url=f"https://t.me/{CHANNEL_ID.lstrip('@')}")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(
-            "Чтобы использовать бота, подпишитесь на канал:",
-            reply_markup=reply_markup
-        )
+        await send_subscription_prompt(update)
         return ConversationHandler.END
 
     await update.message.reply_text("Введите текущий тариф (₽/мес):")
@@ -259,6 +289,10 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 async def history(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_subscription(update):
+        await send_subscription_prompt(update)
+        return
+        
     user_name = update.effective_user.full_name
     if not os.path.exists(HISTORY_FILE):
         await update.message.reply_text("История пуста.")
@@ -301,10 +335,15 @@ if __name__ == '__main__':
     # Запуск Telegram бота
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
+    from telegram.ext import CallbackQueryHandler
+    
     conv = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
-            CUR: [MessageHandler(filters.TEXT & ~filters.COMMAND, cur_tariff)],
+            CUR: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, cur_tariff),
+                CallbackQueryHandler(subscription_callback, pattern="check_subscription")
+            ],
             NEW: [MessageHandler(filters.TEXT & ~filters.COMMAND, new_tariff)],
             COST: [MessageHandler(filters.TEXT & ~filters.COMMAND, cost)],
             PERIOD: [MessageHandler(filters.TEXT & ~filters.COMMAND, period)],
