@@ -78,6 +78,42 @@ async def cost(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("За какой период рассчитываем выгоду (лет)?")
     return PERIOD
 
+def format_table_for_telegram(rows, summary):
+    """Форматирует таблицу для красивого отображения в Telegram"""
+    # Создаем заголовок таблицы
+    table_text = "📊 **РАСЧЕТ ТАРИФОВ**\n\n"
+    table_text += f"```\n"
+    table_text += f"{'Мес':<4} {'Старая':<8} {'Новая':<8} {'Экономия':<8}\n"
+    table_text += f"{'-'*4} {'-'*8} {'-'*8} {'-'*8}\n"
+    
+    # Добавляем строки данных (показываем только первые 12 и последние 12 месяцев если больше 24)
+    data_rows = rows[1:]  # убираем заголовок
+    
+    if len(data_rows) <= 24:
+        for row in data_rows:
+            month, old, new, diff = row
+            diff_sign = "+" if diff >= 0 else ""
+            table_text += f"{month:<4} {old:<8} {new:<8} {diff_sign}{diff:<7}\n"
+    else:
+        # Первые 12 месяцев
+        for row in data_rows[:12]:
+            month, old, new, diff = row
+            diff_sign = "+" if diff >= 0 else ""
+            table_text += f"{month:<4} {old:<8} {new:<8} {diff_sign}{diff:<7}\n"
+        
+        table_text += f"{'...':<4} {'...':<8} {'...':<8} {'...':<8}\n"
+        
+        # Последние 12 месяцев
+        for row in data_rows[-12:]:
+            month, old, new, diff = row
+            diff_sign = "+" if diff >= 0 else ""
+            table_text += f"{month:<4} {old:<8} {new:<8} {diff_sign}{diff:<7}\n"
+    
+    table_text += f"```\n\n"
+    table_text += f"📈 **ИТОГИ:**\n{summary}"
+    
+    return table_text
+
 async def generate_and_send_reports(cur, new, cost, period_years, user_name, bot, chat_id, admin_id=None):
     months = int(period_years * 12)
     cumulative_old = 0
@@ -95,6 +131,10 @@ async def generate_and_send_reports(cur, new, cost, period_years, user_name, bot
 
     summary = f"Окупаемость: {payback_month} мес.\n" if payback_month else "Окупаемость не достигнута.\n"
     summary += f"Общая экономия за {months} мес.: {round(cumulative_old - cumulative_new)}₽"
+
+    # Отправляем таблицу в Telegram
+    table_message = format_table_for_telegram(rows, summary)
+    await bot.send_message(chat_id=chat_id, text=table_message, parse_mode='Markdown')
 
     # PDF
     pdf_buffer = BytesIO()
