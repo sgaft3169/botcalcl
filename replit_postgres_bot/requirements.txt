@@ -1,8 +1,8 @@
 python-telegram-bot==20.3
-sqlalchemy
-psycopg2-binary
+aiohttp
 python-dotenv
-reportlab
 openpyxl
+reportlab
 matplotlib
-flask
+psycopg2-binary
+sqlalchemy
