@@ -324,7 +324,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(help_text)
 
-if __name__ == '__main__':
+  # if __name__ == '__main__':
    
     # Запуск сервера в отдельном потоке
 
