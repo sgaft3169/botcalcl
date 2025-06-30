@@ -325,13 +325,32 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(help_text)
 
 if __name__ == '__main__':
-    # Запуск Flask сервера в отдельном потоке
-    from flask_server import run_flask
-    import threading
-    
-    flask_thread = threading.Thread(target=run_flask, daemon=True)
-    flask_thread.start()
-    
+   
+    # Запуск сервера в отдельном потоке
+
+import asyncio
+from http_server import run_http_server
+from telegram.ext import ApplicationBuilder, CommandHandler
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+async def start(update, context):
+    await update.message.reply_text("Привет! Бот работает.")
+
+async def main():
+    asyncio.create_task(run_http_server())
+
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+
+    await app.run_polling()
+
+if __name__ == '__main__':
+    asyncio.run(main())    
     # Запуск Telegram бота
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
