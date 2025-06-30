@@ -324,7 +324,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(help_text)
 
-  # if __name__ == '__main__':
+   if __name__ == '__main__':
    
     # Запуск сервера в отдельном потоке
 
@@ -350,7 +350,8 @@ async def main():
     await app.run_polling()
 
 if __name__ == '__main__':
-    asyncio.run(main())    
+    asyncio.run(main())   
+    
     # Запуск Telegram бота
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
